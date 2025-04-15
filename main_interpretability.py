@@ -5,6 +5,7 @@ from tabpfn_extensions import TabPFNClassifier, TabPFNRegressor
 import torch
 from plot import plot_locations
 import matplotlib.pyplot as plt
+from tabpfn_extensions import interpretability
 
 filepath = "data/CSI_Data_ALL_28022025.csv"
 df = pd.read_csv(filepath)
@@ -12,8 +13,9 @@ df = pd.read_csv(filepath)
 
 filter_features = ["river", "site" ]
 input_features = ["recentRain", "estimatedWidth", "estimatedDepth", "waterFlow","long", "lat", "timestamp"]
-intersting_columns = ["waterLevel", "temperature", "totalDissolvedSolids", "turbidity", "ph", "nitrate", "ammonia","phosphate",]#
+intersting_columns = ["waterLevel", "temperature", "totalDissolvedSolids", "turbidity", "ph", "nitrate", "ammonia",]#
 all_features =  input_features + intersting_columns
+target_features = ["phosphate"]
 
 categorical_features_names = ["recentRain","waterFlow","nitrate","ammonia","waterLevel"] 
 
@@ -42,6 +44,7 @@ df["waterLevel"] = [list(ids_waterLevel).index(a) for a in np.asarray(df["waterL
 site_river_combinations = df[["river", "site"]].drop_duplicates()
 
 X = []
+Y = []
 i = 0
 for combination in site_river_combinations.values:
     df_filtered = df[df["river"] == combination[0]]
@@ -56,6 +59,7 @@ for combination in site_river_combinations.values:
     appended[:, -1] = i
    # print("appended: ", appended)
     X.append(appended)
+    Y.append(df_filtered[target_features].values)
     if i> 20:
         break
    # 
@@ -63,34 +67,32 @@ for combination in site_river_combinations.values:
 #df_filtered = df[input_features+intersting_columns]
 #X = X[:1000]
 X = np.concatenate(X, axis=0)
+Y = np.concatenate(Y, axis=0)
+index_of_nans = np.where(np.isnan(Y))
+Y = np.delete(Y, index_of_nans[0], axis=0)
+X = np.delete(X, index_of_nans[0], axis=0)
+from sklearn.model_selection import train_test_split
+X, X_test, Y, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 print(X.shape)
-attribute_names = df_filtered.columns.tolist()
+attribute_names = df_filtered[all_features].columns.tolist() +["site_index"]
 
 # print(X)
 # print(attribute_names)
 # plot_locations(df, combination, intersting_columns, ids_nitrate, ids_ammonia, ids_waterLevel)
     # Initialize models
-clf = TabPFNClassifier(n_estimators=4)
 reg = TabPFNRegressor(n_estimators=4)
-model_unsupervised = unsupervised.TabPFNUnsupervisedModel(
-    tabpfn_clf=clf, tabpfn_reg=reg
+#categorical_features = [(all_features).index(c) for c in categorical_features_names]
+#reg.set_categorical_features(categorical_features)
+
+reg.fit(torch.tensor(X), torch.tensor(Y))
+
+
+shap_values = interpretability.shap.get_shap_values(
+    estimator=reg,
+    test_x=X_test[:50],
+    attribute_names=attribute_names,
+    algorithm="permutation",
 )
-categorical_features = [(all_features).index(c) for c in categorical_features_names]
-model_unsupervised.set_categorical_features(categorical_features)
 
-model_unsupervised.fit(torch.tensor(X))
-p = model_unsupervised.outliers(torch.tensor(X), n_permutations=3)
-print(p)
-
-i = 0
-p_index = 0
-for combination in site_river_combinations.values:
-    df_filtered = df[df["river"] == combination[0]]
-    df_filtered = df_filtered[df_filtered["site"] == combination[1]]
-
-    if len(df_filtered) < 20:
-        continue
-
-    plot_locations(df_filtered, combination, intersting_columns, ids_nitrate, ids_ammonia, ids_waterLevel, p[p_index:p_index + len(df_filtered)])
-    p_index += len(df_filtered)
-
+# Create visualization
+fig = interpretability.shap.plot_shap(shap_values)
