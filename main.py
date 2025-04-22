@@ -5,17 +5,24 @@ from tabpfn_extensions import TabPFNClassifier, TabPFNRegressor
 import torch
 from plot import plot_locations
 import matplotlib.pyplot as plt
-
+import pickle
+from config import *
 filepath = "data/CSI_Data_ALL_28022025.csv"
 df = pd.read_csv(filepath)
+
 #print(df.head())
 
 filter_features = ["river", "site" ]
 input_features = ["recentRain", "estimatedWidth", "estimatedDepth", "waterFlow","long", "lat", "timestamp"]
-intersting_columns = ["waterLevel", "temperature", "totalDissolvedSolids", "turbidity", "ph", "nitrate", "ammonia","phosphate",]#
+intersting_columns = ["waterLevel", "temperature", "totalDissolvedSolids", "turbidity", "ph", "nitrate", "ammonia","phosphate", "landUseWoodland", "landUseMoorlandOrHeath", "landUseUrbanResidential", "landUseIndustrialOrCommercial","landUseParklandOrGardens", "landUseGrasslandOrPasture" , "landUseAgriculture", "landUseTilledLand", "landUseOther"]#
 all_features =  input_features + intersting_columns
 
-categorical_features_names = ["recentRain","waterFlow","nitrate","ammonia","waterLevel"] 
+categorical_features_names = ["recentRain","waterFlow","nitrate","ammonia","waterLevel", "landUseWoodland", "landUseMoorlandOrHeath", "landUseUrbanResidential", "landUseIndustrialOrCommercial","landUseParklandOrGardens", "landUseGrasslandOrPasture" , "landUseAgriculture", "landUseTilledLand", "landUseOther"] 
+
+ids = []
+for name in categorical_features_names:
+    ids.append(np.unique(np.asarray(df[name]).astype(str)))
+    df[name] = [list(ids[-1]).index(a) for a in np.asarray(df[name]).astype(str)]
 
 # ids_river = np.unique(np.asarray(df["river"]).astype(str))
 # df["river"] = [list(ids_river).index(a) for a in np.asarray(df["river"]).astype(str)]
@@ -47,7 +54,7 @@ for combination in site_river_combinations.values:
     df_filtered = df[df["river"] == combination[0]]
     df_filtered = df_filtered[df_filtered["site"] == combination[1]]
 
-    if len(df_filtered) < 20:
+    if len(df_filtered) < MIN_LENGTH_TIMESERIES:
         continue
     i += 1
     print("length of df: ", len(df_filtered))
@@ -56,7 +63,7 @@ for combination in site_river_combinations.values:
     appended[:, -1] = i
    # print("appended: ", appended)
     X.append(appended)
-    if i> 20:
+    if i> MAX_N_TIMESERIES:
         break
    # 
    # df_y = df_filtered[target_columns]
@@ -80,17 +87,22 @@ model_unsupervised.set_categorical_features(categorical_features)
 
 model_unsupervised.fit(torch.tensor(X))
 p = model_unsupervised.outliers(torch.tensor(X), n_permutations=3)
-print(p)
 
+#save p values
+with open("outliers.pkl", "wb") as f:
+    pickle.dump(p.numpy(), f)
+
+print(p)
+p = p.numpy()
 i = 0
 p_index = 0
 for combination in site_river_combinations.values:
     df_filtered = df[df["river"] == combination[0]]
     df_filtered = df_filtered[df_filtered["site"] == combination[1]]
 
-    if len(df_filtered) < 20:
+    if len(df_filtered) < MAX_N_TIMESERIES:
         continue
 
-    plot_locations(df_filtered, combination, intersting_columns, ids_nitrate, ids_ammonia, ids_waterLevel, p[p_index:p_index + len(df_filtered)])
+    plot_locations(df_filtered, combination, intersting_columns, ids, p[p_index:p_index + len(df_filtered)])
     p_index += len(df_filtered)
 
