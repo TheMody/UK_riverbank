@@ -33,6 +33,23 @@ class ts_model(torch.nn.Module):
          #   o[:,:,categorical_features_indices[i]] = c_x[torch.argmax(c_x, dim = 2)]
         return u, o, c
     
+class baseline_model(torch.nn.Module):
+    def __init__(self,input_dim, hidden_dim, output_dim, ids) -> None:
+        super().__init__()
+        self.ids = list(ids.values())
+       # print(self.ids)
+        self.linear = torch.nn.Linear(input_dim, hidden_dim)
+    
+    def forward(self,x):
+        c = []
+        for i,ind in enumerate(categorical_features_indices):
+            # print(i)
+            # print(self.ids[i])
+            to_append = torch.zeros(x.shape[0], x.shape[1], len(self.ids[i])+1).to(x.device)
+            to_append[:,:,x[:, :, ind].long()+1] = 1
+            c.append(to_append)
+        return x,x,c
+    
 class transformer_model(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, ids):
         super(transformer_model, self).__init__()
@@ -57,8 +74,8 @@ class transformer_model(torch.nn.Module):
             x_cat += self.embeddings[i](x[:, :, ind].long()+1)
         x = x_cat + self.feature_embedding(x[:,:, not_categorical_features_indices])
         #predicts all timesteps at once
-        x = self.model(x,return_embeddings = True)
-        print(x.shape)
+        x = self.model(x)
+      #  print(x.shape)
         u = self.fc_u(x)
         o = self.fc_o(x)
         c = []

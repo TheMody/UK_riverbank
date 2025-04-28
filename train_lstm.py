@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pickle
 from config import *
 from dataset import get_ukriver_dataset
-from model import ts_model
+from model import ts_model, baseline_model, transformer_model
 import wandb
 from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler
@@ -23,29 +23,25 @@ scaler = MinMaxScaler(feature_range=(-1,1))
 X_without_categorical_features = scaler.fit_transform(X_without_categorical_features.reshape(-1, X_without_categorical_features.shape[-1])).reshape(X_without_categorical_features.shape)
 X[:,:,not_categorical_features_indices] = X_without_categorical_features
 #visualize each feature of x indepentenly
-# import matplotlib.pyplot as plt 
-# for i in range(X.shape[2]):
-#     print( X[1,:,i])
-#     plt.plot(range(100),X[1,:,i])
-#     plt.title(all_features[i])
-#     plt.show()
+
 np.random.shuffle(X)
 X_test = X[:X.shape[0]//5]
 X = X[X.shape[0]//5:]
 #filter X to remove rows with NaN values
-x_mean = []
-for i in range(X.shape[2]):
-    nanfilter = X[:, :, i] != NAN_VALUE
-    mean_feature = np.mean(X[:, :, i][nanfilter])
-    x_mean.append(mean_feature)
-x_mean = np.asarray(x_mean).reshape(1,1,-1)
-mean_loss = np.mean(np.abs(X - x_mean)[X != NAN_VALUE])
-print(mean_loss)
-#Y = np.asarray(Y)
-print(X.shape)
+# x_mean = []
+# for i in range(X.shape[2]):
+#     nanfilter = X[:, :, i] != NAN_VALUE
+#     mean_feature = np.mean(X[:, :, i][nanfilter])
+#     x_mean.append(mean_feature)
+# x_mean = np.asarray(x_mean).reshape(1,1,-1)
+# mean_loss = np.mean(np.abs(X - x_mean)[X != NAN_VALUE])
+# print(mean_loss)
+# #Y = np.asarray(Y)
+# print(X.shape)
 
-
-model = ts_model(X.shape[-1],1024, X.shape[-1], ids).to(device)
+#model = ts_model(X.shape[-1],256, X.shape[-1], ids).to(device)
+model = transformer_model(X.shape[-1],256, X.shape[-1], ids).to(device)
+#model = baseline_model(X.shape[-1],256, X.shape[-1], ids).to(device)
 
 def criterion(x, x_pred_u,x_pred_o):
     loss = torch.mean(((0.5*x_pred_o + 0.5* ((x- x_pred_u)**2)/torch.exp(x_pred_o))[x != NAN_VALUE]))
@@ -58,8 +54,8 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
 #optimizer = SaLSA(model.parameters(),weight_decay=0.01, c = 0.5, use_mv = True,momentum=(0.0,0.0,0.99),)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.8)
 wandb.init(project="ukriver", name="lstm")
-max_epochs = 10000
-batch_size = 8
+max_epochs = 1000
+batch_size = 16
 i = 0
 best_test_loss = 1e10
 for e in range(max_epochs):
@@ -98,6 +94,7 @@ for e in range(max_epochs):
             plot_preprocessed(x_test[0,1:].cpu().numpy(),x_pred_u[0,:-1].cpu().numpy(), x_pred_o[0,:-1].cpu().numpy())
         wandb.log({"test_loss": loss_test.item(), "loss_train": loss.item(), "lr": scheduler.get_last_lr()[0]})
         print(f"Epoch {e}: loss = {loss.item()}, test_loss = {loss_test.item()}")
+       # print(f"Epoch {e}: test_loss = {loss_test.item()}")
         #save model if best
         if loss_test.item() < best_test_loss:
             best_test_loss = loss_test.item()
