@@ -4,18 +4,23 @@ import matplotlib.gridspec as gridspec
 from utils import find_outliers
 from config import *
 #expects x to be a 2d array with shape (n_timesteps, n_features)
-def plot_preprocessed(X, X_pred, X_pred_margin):
+def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False):
     fig = plt.figure(figsize=(35, 20))
     gs = gridspec.GridSpec(4, 5, figure=fig, wspace=0.4, hspace=0.4)
     timeseries_mask = X[ :, 0] != NAN_VALUE
     timeseries_length = np.sum(timeseries_mask)
     X_pred_margin = np.sqrt(np.exp(X_pred_margin))
+    num_of_vis_features = 19
+    if X_outlier is not None:
+        num_of_vis_features -= 1
     for i in range(X.shape[1]):
         timeseries = X[ :, i]
         ax = fig.add_subplot(gs[i//5, i%5])
         ax.set_title(f"Time Series of {all_features[i]}")
         ax.set_xlabel("Timestamp")
         ax.set_ylabel(all_features[i])
+        timeseries[timeseries == -1.0] = np.nan
+
         ax.plot(range(timeseries_length),timeseries[timeseries_mask], color="blue", label="Original", zorder = 3)
 
         predicted_timeseries = X_pred[ :, i]
@@ -29,10 +34,16 @@ def plot_preprocessed(X, X_pred, X_pred_margin):
         #     ax.fill_between(range(timeseries_length), y_lower[timeseries_mask], y_upper[timeseries_mask], color='lightcoral', alpha=0.4, label='uncertainity region (not really accurate)', zorder=2)
         ax.plot(range(timeseries_length),predicted_timeseries[timeseries_mask], color="red", label="Predicted", zorder = 3)
         ax.legend()
-        if i == 19:
+        if i == num_of_vis_features:
             break
-
-    #plt.show()
+    if X_outlier is not None:
+        ax = fig.add_subplot(gs[3, 4])
+        ax.set_title(f"Log Likelihood of Points")
+        ax.set_xlabel("Timestamp")
+        ax.set_ylabel("Log Likelihood of Points")
+        ax.scatter(range(timeseries_length),X_outlier[timeseries_mask], color="blue", label="Original", zorder = 3)
+    if show:
+        plt.show()
     plt.savefig(f"newer_figures/lstmperformance.png")
     plt.close()
     

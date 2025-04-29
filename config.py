@@ -1,6 +1,6 @@
-MIN_LENGTH_TIMESERIES = 10
-MAX_N_TIMESERIES = 2000
-NAN_VALUE = -1
+MIN_LENGTH_TIMESERIES = 20
+MAX_N_TIMESERIES = 16
+NAN_VALUE = -1.0
 
 filter_features = ["river", "site" ]
 input_features = ["recentRain", "estimatedWidth", "estimatedDepth", "waterFlow", "timestamp"]#"long", "lat",

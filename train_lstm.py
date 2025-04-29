@@ -21,6 +21,8 @@ X = np.asarray(X)
 X_without_categorical_features = np.delete(X, categorical_features_indices, axis=2)
 scaler = MinMaxScaler(feature_range=(-1,1))
 X_without_categorical_features = scaler.fit_transform(X_without_categorical_features.reshape(-1, X_without_categorical_features.shape[-1])).reshape(X_without_categorical_features.shape)
+with open("scaler.pkl", "wb") as f:
+    pickle.dump(scaler, f)
 X[:,:,not_categorical_features_indices] = X_without_categorical_features
 #visualize each feature of x indepentenly
 
@@ -55,7 +57,7 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.8)
 wandb.init(project="ukriver", name="lstm")
 max_epochs = 1000
-batch_size = 16
+batch_size = 8
 i = 0
 best_test_loss = 1e10
 for e in range(max_epochs):
