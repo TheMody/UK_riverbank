@@ -18,7 +18,7 @@ With the trained model we would automatically get uncertainty estimates for all 
 
 The problem with this solution is maybe that the amount of data we have is too small, for a complex model, but i am not sure.
 
-Test loss when just predicting the last time step equal to the current time step: 0.1372
 Test loss when predicting average: 0.3556
+Test loss when just predicting the last time step equal to the current time step: 0.1372
 Test loss for lstm training: 0.0957
 Test loss for transformer decoder: 0.0938

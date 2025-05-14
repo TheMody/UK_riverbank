@@ -11,7 +11,7 @@ X,Y, _,ids = get_ukriver_dataset(preprocess = True)
 X = np.asarray(X)
 #X = X[:100]
 X_without_categorical_features = np.delete(X, categorical_features_indices, axis=2)
-with open("scaler_1.pkl", "rb") as f:
+with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 X_without_categorical_features = scaler.transform(X_without_categorical_features.reshape(-1, X_without_categorical_features.shape[-1])).reshape(X_without_categorical_features.shape)
 X[:,:,not_categorical_features_indices] = X_without_categorical_features
@@ -36,7 +36,7 @@ def calcualte_categorical_prob(x,x_pred):
     return categorical_prob
 
 model = transformer_model(X.shape[-1],256, X.shape[-1], ids)
-model.load_state_dict(torch.load("model_1.pth"))
+model.load_state_dict(torch.load("model.pth"))
 model.to(device)
 
 epsilon = 1e-8
@@ -54,4 +54,4 @@ with torch.no_grad():
     #all_probs = torch.concatenate((reg_prob, categorical_prob), dim = 2)
 
     for i in range(X.shape[0]):
-        plot_preprocessed(X[i,1:].cpu().numpy(),x_pred_u[i,:-1].cpu().numpy(), x_pred_o[i,:-1].cpu().numpy(), all_probs_log[i].cpu().numpy(), show = True)
+        plot_preprocessed(X[i,1:].cpu().numpy(),x_pred_u[i,:-1].cpu().numpy(), x_pred_o[i,:-1].cpu().numpy(), all_probs_log[i].cpu().numpy(), show = False, save_pth="newer_figures/ukriver_" + str(i) + ".svg")

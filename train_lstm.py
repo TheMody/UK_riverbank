@@ -9,6 +9,7 @@ import pickle
 from config import *
 from dataset import get_ukriver_dataset
 from model import ts_model, baseline_model, transformer_model
+from dlinear import Dlinear
 import wandb
 from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler
@@ -16,6 +17,7 @@ from plot import plot_preprocessed
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 X,Y,_,ids = get_ukriver_dataset(preprocess = True)
 X = np.asarray(X)
+print("length of dataset", len(X))
 
 #this should only scale features which are not categorical
 X_without_categorical_features = np.delete(X, categorical_features_indices, axis=2)
@@ -44,6 +46,7 @@ X = X[X.shape[0]//5:]
 #model = ts_model(X.shape[-1],256, X.shape[-1], ids).to(device)
 model = transformer_model(X.shape[-1],256, X.shape[-1], ids).to(device)
 #model = baseline_model(X.shape[-1],256, X.shape[-1], ids).to(device)
+#model = Dlinear(configs).to(device)
 
 def criterion(x, x_pred_u,x_pred_o):
     loss = torch.mean(((0.5*x_pred_o + 0.5* ((x- x_pred_u)**2)/torch.exp(x_pred_o))[x != NAN_VALUE]))

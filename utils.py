@@ -7,7 +7,7 @@ def find_outliers(p):
     # #mark all points that are more than 2 std away from the mean
     outliers = np.where(np.abs(p - mean_p) > 5 * std_p)[0]
     return outliers
-from sklearn.preprocessing import MinMaxScaler
+
 def impute_timeseries(df,overall_start, overall_end, intervall = 1000):
     #this will regularize the time series to have regular reporting intervalls and will impute missing values using nearest neighbors
     df.sort_values(by="timestamp")
