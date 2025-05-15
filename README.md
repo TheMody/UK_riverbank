@@ -1,6 +1,6 @@
 # UK_riverbank
 
-This reop contains an analysis of a UK river dataset, focusing on the identification of anomalies and the key features that characterize them. The core task involved detecting irregularities within the provided data and understanding which data attributes are most significant for this detection. 
+This repo contains an analysis of a UK river dataset, focusing on the identification of anomalies and the key features that characterize them. The core task involved detecting irregularities within the provided data and understanding which data attributes are most significant for this detection. 
 
 This challenge aligns with typical outlier detection scenarios, for which numerous methodologies exist.
 The dataset comprised approximately 25,000 records and 60 columns. Initial examination revealed redundancy in several features; for example, various location identifiers (longitude, latitude, geometry coordinates, site, and river names) offered overlapping information for machine learning purposes. To address this, a refined set of 24 distinct input features was selected.
