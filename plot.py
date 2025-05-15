@@ -13,7 +13,7 @@ def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False, sa
     num_of_vis_features = 8
     if X_outlier is not None:
         num_of_vis_features -= 1
-    for i in range(num_of_vis_features+1):
+    for i in range(len(display_features_indices)):
         timeseries = X[ :, display_features_indices[i]]
        # print(i//3, i%3)
         ax = fig.add_subplot(gs[i//3, i%3])

@@ -16,6 +16,3 @@ attribute_names = all_features +["site_index"]
 categorical_features_indices = [all_features.index(a) for a in categorical_features_names if a in all_features]
 not_categorical_features_indices = [i for i in range(len(all_features)) if i not in categorical_features_indices]+[len(all_features)]
 display_features_indices = [all_features.index(a) for a in display_features if a in all_features]
-
-print(len(all_features))
-print(all_features)
