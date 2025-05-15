@@ -10,8 +10,11 @@ Our primary strategy for anomaly detection centered on time series analysis. By 
 # First Results
 
 Test loss when predicting average: 0.3556
+
 Test loss when just predicting the last time step equal to the current time step: 0.1372
+
 Test loss for lstm training: 0.0957
+
 Test loss for transformer decoder: 0.0938
 
 ![BioCLIP Schematic](newer_figures/ukriver_10.svg)
