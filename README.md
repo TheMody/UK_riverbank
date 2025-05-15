@@ -1,22 +1,13 @@
 # UK_riverbank
 
-What could solve Outlier detection here the most sensibly?
+This reop contains an analysis of a UK river dataset, focusing on the identification of anomalies and the key features that characterize them. The core task involved detecting irregularities within the provided data and understanding which data attributes are most significant for this detection. 
 
-TabPFNv2 fails completely, time series from single measuring places do not provide enough data and the detected outliers are completely arbitrary. Furthermore, the outliers method seems highly unstable and often just throws an error without a good reason.
+This challenge aligns with typical outlier detection scenarios, for which numerous methodologies exist.
+The dataset comprised approximately 25,000 records and 60 columns. Initial examination revealed redundancy in several features; for example, various location identifiers (longitude, latitude, geometry coordinates, site, and river names) offered overlapping information for machine learning purposes. To address this, a refined set of 24 distinct input features was selected.
 
-Rolling Z Score abs(x‑μ₅₀)/σ_IQR > 3 should be interesting
+Our primary strategy for anomaly detection centered on time series analysis. By forecasting subsequent data points, we could then compare these predictions to actual observations. Significant discrepancies between predicted and observed values were classified as anomalies. Notably, features that do not change over time, such as land use classifications, were excluded from the predictive modeling phase as their future states are trivial to determine.
 
-Maybe try adding more examples to TabPFN at the moment context is a bit unreasonably small.
-
-A solution could be to use some kind of tokenization for the input data, this would also handle missing data (TabPFN just set missing data to 0) a very common occurrence in the dataset.
-
-The tokenization could use one-hot to tokens for all categorical features, but i am not sure what to use for regression? The timestamp could be used as either another feature, or more appropriately, it could be used to generate the positional encoding. I am not sure what makes more sense.
-
-Then a model could be trained using autoregressive generation or MLM. autoregressive i think makes more sense due to time series nature, no forward information should be known.
-
-With the trained model we would automatically get uncertainty estimates for all generated tokens. High uncertainty could be marked.
-
-The problem with this solution is maybe that the amount of data we have is too small, for a complex model, but i am not sure.
+First Results:
 
 Test loss when predicting average: 0.3556
 Test loss when just predicting the last time step equal to the current time step: 0.1372
