@@ -15,3 +15,5 @@ Test loss for lstm training: 0.0957
 Test loss for transformer decoder: 0.0938
 
 ![BioCLIP Schematic](newer_figures/ukriver_10.svg)
+
+for more exemplary results see the newer figures folder.
