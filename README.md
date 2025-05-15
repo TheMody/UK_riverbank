@@ -7,7 +7,7 @@ The dataset comprised approximately 25,000 records and 60 columns. Initial exami
 
 Our primary strategy for anomaly detection centered on time series analysis. By forecasting subsequent data points, we could then compare these predictions to actual observations. Significant discrepancies between predicted and observed values were classified as anomalies. Notably, features that do not change over time, such as land use classifications, were excluded from the predictive modeling phase as their future states are trivial to determine.
 
-First Results:
+# First Results
 
 Test loss when predicting average: 0.3556
 Test loss when just predicting the last time step equal to the current time step: 0.1372
