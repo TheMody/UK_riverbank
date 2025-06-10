@@ -49,8 +49,8 @@ model = transformer_model(X.shape[-1],256, X.shape[-1], ids).to(device)
 #model = Dlinear(configs).to(device)
 
 def criterion(x, x_pred_u,x_pred_o):
-    loss = torch.mean(((0.5*x_pred_o + 0.5* torch.abs((x- x_pred_u))/torch.exp(x_pred_o))[x != NAN_VALUE]))
-    #loss = torch.mean(((0.5*x_pred_o + 0.5* ((x- x_pred_u)**2)/torch.exp(x_pred_o))[x != NAN_VALUE]))
+  #  loss = torch.mean(((0.5*x_pred_o + 0.5* torch.abs((x- x_pred_u))/torch.exp(x_pred_o))[x != NAN_VALUE])) really should use mse not mae error
+    loss = torch.mean(((0.5*x_pred_o + 0.5* ((x- x_pred_u)**2)/torch.exp(x_pred_o))[x != NAN_VALUE]))
     return loss
 
 def criterion_test(x,x_pred):
