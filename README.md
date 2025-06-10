@@ -20,3 +20,9 @@ Test loss for transformer decoder: 0.0938
 ![BioCLIP Schematic](newer_figures/ukriver_10.svg)
 
 for more exemplary results see the newer figures folder.
+
+# Datasources for Rain
+https://data.ceda.ac.uk/badc/ukmo-midas-open
+https://data.ceda.ac.uk/badc/ukmo-midas
+https://data.ceda.ac.uk/badc/ukmo-nimrod
+https://data.ceda.ac.uk/badc
