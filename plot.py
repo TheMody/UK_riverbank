@@ -7,7 +7,7 @@ from config import *
 def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False, save_pth = "newer_figures/lstmperformance.svg"):
     fig = plt.figure(figsize=(35, 20))
     gs = gridspec.GridSpec(3, 3, figure=fig, wspace=0.4, hspace=0.4)
-    timeseries_mask = X[ :, 2] != NAN_VALUE
+    timeseries_mask = X[ :, 4] != NAN_VALUE
     timeseries_length = np.sum(timeseries_mask)
     X_pred_margin = np.sqrt(np.exp(X_pred_margin))
     num_of_vis_features = 8

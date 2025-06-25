@@ -15,7 +15,7 @@ with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 X_without_categorical_features = scaler.transform(X_without_categorical_features.reshape(-1, X_without_categorical_features.shape[-1])).reshape(X_without_categorical_features.shape)
 X[:,:,not_categorical_features_indices] = X_without_categorical_features
-np.random.shuffle(X)
+#np.random.shuffle(X)
 X = torch.from_numpy(X).float().to(device)
 
 

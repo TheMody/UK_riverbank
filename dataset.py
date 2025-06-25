@@ -7,7 +7,7 @@ from utils import impute_timeseries
 from tqdm import tqdm
 
 def get_ukriver_dataset(preprocess = False):
-    filepath = "data/CSI_Data_ALL_28022025.csv"
+    filepath = "data/CSI_Data_ALL_12062025.csv"
     df = pd.read_csv(filepath)
     #print(df.head())
 
@@ -17,7 +17,7 @@ def get_ukriver_dataset(preprocess = False):
         df[name] = [list(ids[name]).index(a) for a in np.asarray(df[name]).astype(str)]
 
     #find all unique river and site combinations
-    site_river_combinations = df[["river", "site"]].drop_duplicates()
+    site_river_combinations = df[filter_features].drop_duplicates()
 
     X = []
     Y = []
@@ -27,8 +27,14 @@ def get_ukriver_dataset(preprocess = False):
     intervall = int(abs(overall_start - overall_end)/100)
     print("preprocessing data")
     for combination in tqdm(site_river_combinations.values):
-        df_filtered = df[df["river"] == combination[0]]
-        df_filtered = df_filtered[df_filtered["site"] == combination[1]]
+       # print(combination)
+        for a,value in enumerate(combination):
+            if a == 0:
+                df_filtered = df[df[filter_features[a]] == value]
+            else:
+                df_filtered = df_filtered[df_filtered[filter_features[a]] == value]
+        # df_filtered = df[df["river"] == combination[0]]
+        # df_filtered = df_filtered[df_filtered["site"] == combination[1]]
 
         if len(df_filtered) < MIN_LENGTH_TIMESERIES:
             continue

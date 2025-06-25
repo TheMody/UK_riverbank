@@ -19,6 +19,13 @@ X,Y,_,ids = get_ukriver_dataset(preprocess = True)
 X = np.asarray(X)
 print("length of dataset", len(X))
 
+#save X and Y to pickle files
+with open("Preprocessed_dataset.pkl", "wb") as f:
+    pickle.dump(X, f)
+
+print("X shape: ", X.shape)
+
+
 #this should only scale features which are not categorical
 X_without_categorical_features = np.delete(X, categorical_features_indices, axis=2)
 scaler = MinMaxScaler(feature_range=(-1,1))
@@ -28,6 +35,7 @@ with open("scaler.pkl", "wb") as f:
 X[:,:,not_categorical_features_indices] = X_without_categorical_features
 #visualize each feature of x indepentenly
 
+np.random.seed(42)
 np.random.shuffle(X)
 X_test = X[:X.shape[0]//5]
 X = X[X.shape[0]//5:]
@@ -49,8 +57,8 @@ model = transformer_model(X.shape[-1],256, X.shape[-1], ids).to(device)
 #model = Dlinear(configs).to(device)
 
 def criterion(x, x_pred_u,x_pred_o):
-    loss = torch.mean(((0.5*x_pred_o + 0.5* torch.abs((x- x_pred_u))/torch.exp(x_pred_o))[x != NAN_VALUE]))
-    #loss = torch.mean(((0.5*x_pred_o + 0.5* ((x- x_pred_u)**2)/torch.exp(x_pred_o))[x != NAN_VALUE]))
+   # loss = torch.mean(((0.5*x_pred_o + 0.5* torch.abs((x- x_pred_u))/torch.exp(x_pred_o))[x != NAN_VALUE])) #l1 and l2 loss does not seem to differ much l1 loss seems to have higher uncertainty
+    loss = torch.mean(((0.5*x_pred_o + 0.5* ((x- x_pred_u)**2)/torch.exp(x_pred_o))[x != NAN_VALUE]))
     return loss
 
 def criterion_test(x,x_pred):
