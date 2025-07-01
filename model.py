@@ -59,8 +59,8 @@ class transformer_model(torch.nn.Module):
 
         self.model = Decoder(
             dim = hidden_dim,
-            depth = 6,
-            heads = 4
+            depth = num_layers,
+            heads = hidden_dim//64
         )
         self.fc_u = torch.nn.Linear(hidden_dim, output_dim)
         self.fc_o = torch.nn.Linear(hidden_dim, output_dim)

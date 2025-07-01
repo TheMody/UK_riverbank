@@ -26,3 +26,9 @@ https://data.ceda.ac.uk/badc/ukmo-midas-open
 https://data.ceda.ac.uk/badc/ukmo-midas
 https://data.ceda.ac.uk/badc/ukmo-nimrod
 https://data.ceda.ac.uk/badc
+
+
+# Notes on First Results:
+Pretty much the same outcome whether or not the Catchment basement is included in the input prediction.
+
+Best Model seems to be very tiny transformer. 64 hidden size 1 layer without catchment seems to work better

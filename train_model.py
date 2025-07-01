@@ -16,6 +16,7 @@ from sklearn.preprocessing import MinMaxScaler
 from plot import plot_preprocessed
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 X,Y,_,ids = get_ukriver_dataset(preprocess = True)
+
 X = np.asarray(X)
 print("length of dataset", len(X))
 
@@ -52,7 +53,7 @@ X = X[X.shape[0]//5:]
 # print(X.shape)
 
 #model = ts_model(X.shape[-1],256, X.shape[-1], ids).to(device)
-model = transformer_model(X.shape[-1],256, X.shape[-1], ids).to(device)
+model = transformer_model(X.shape[-1],hidden_dim, X.shape[-1], ids).to(device)
 #model = baseline_model(X.shape[-1],256, X.shape[-1], ids).to(device)
 #model = Dlinear(configs).to(device)
 
@@ -62,7 +63,7 @@ def criterion(x, x_pred_u,x_pred_o):
     return loss
 
 def criterion_test(x,x_pred):
-    loss = torch.mean(torch.abs(x-x_pred)[x != NAN_VALUE])
+    loss = torch.mean((x-x_pred)[x != NAN_VALUE]**2)
     return loss
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
 #optimizer = SaLSA(model.parameters(),weight_decay=0.01, c = 0.5, use_mv = True,momentum=(0.0,0.0,0.99),)
@@ -73,39 +74,40 @@ batch_size = 8
 i = 0
 best_test_loss = 1e10
 for e in range(max_epochs):
-    #shuffle X along axis 0
     np.random.shuffle(X)
     for step in tqdm(range(X.shape[0]//batch_size)):
         i = step * batch_size
         if i + batch_size > X.shape[0]:
             break
-        #print(i)
         x_current = torch.tensor(X[i:i+batch_size]).to(device, dtype=torch.float32)
-        # def closure(backwards = False):
-        #     x_pred_u, x_pred_o = model(x_current)
-        #     loss = criterion(x_current[:,1:], x_pred_u[:,:-1],x_pred_o[:,:-1])
-        #     if backwards: loss.backward()
-        #     return loss
         x_pred_u, x_pred_o, x_pred_c = model(x_current)
-        loss = criterion(x_current[:,1:,not_categorical_features_indices], x_pred_u[:,:-1,not_categorical_features_indices],x_pred_o[:,:-1,not_categorical_features_indices])
+        loss = criterion(x_current[:,1:,loss_features_indices_notcat], x_pred_u[:,:-1,loss_features_indices_notcat],x_pred_o[:,:-1,loss_features_indices_notcat])
+
         loss_cat = 0.0
         for i,ind in enumerate(categorical_features_indices):
-            loss_cat += torch.nn.functional.cross_entropy(x_pred_c[i][:,:-1,:].reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1)), x_pred_c[i].shape[2]),(x_current[:,1:,ind].long()+1).reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1))), ignore_index=0)
-
-        loss = loss + loss_cat /len(categorical_features_indices)
+            if ind in loss_features_indices_cat:
+              loss_cat += torch.nn.functional.cross_entropy(x_pred_c[i][:,:-1,:].reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1)), x_pred_c[i].shape[2]),(x_current[:,1:,ind].long()+1).reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1))), ignore_index=0)
+        loss = loss + loss_cat /len(loss_features_indices_cat)
         optimizer.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
-       # loss = optimizer.step(closure)
         optimizer.step()
     scheduler.step()
     with torch.no_grad():
         #calculate the loss on the test set
         x_test = torch.tensor(X_test).to(device, dtype=torch.float32)
         x_pred_u, x_pred_o, x_pred_c = model(x_test)
-        loss_test = criterion_test(x_test[:,1:], x_pred_u[:,:-1])
-        if e % 20 == 0:
-            plot_preprocessed(x_test[0,1:].cpu().numpy(),x_pred_u[0,:-1].cpu().numpy(), x_pred_o[0,:-1].cpu().numpy())
+
+        loss_test = criterion(x_test[:,1:,loss_features_indices_notcat], x_pred_u[:,:-1,loss_features_indices_notcat], x_pred_o[:,:-1,loss_features_indices_notcat])
+        loss_cat = 0.0
+        for i,ind in enumerate(categorical_features_indices):
+            if ind in loss_features_indices_cat:
+              loss_cat += torch.nn.functional.cross_entropy(x_pred_c[i][:,:-1,:].reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1)), x_pred_c[i].shape[2]),(x_test[:,1:,ind].long()+1).reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1))), ignore_index=0)
+        loss_test = loss_test + loss_cat /len(loss_features_indices_cat)
+     #   loss_test = criterion_test(x_test[:,1:], x_pred_u[:,:-1])
+        if e % 10 == 0:
+            random_index = np.random.randint(0, X_test.shape[0])
+            plot_preprocessed(x_test[random_index,1:].cpu().numpy(),x_pred_u[random_index,:-1].cpu().numpy(), x_pred_o[0,:-1].cpu().numpy())
         wandb.log({"test_loss": loss_test.item(), "loss_train": loss.item(), "lr": scheduler.get_last_lr()[0]})
         print(f"Epoch {e}: loss = {loss.item()}, test_loss = {loss_test.item()}")
        # print(f"Epoch {e}: test_loss = {loss_test.item()}")
