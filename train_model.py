@@ -108,6 +108,7 @@ for e in range(max_epochs):
      #   loss_test = criterion_test(x_test[:,1:], x_pred_u[:,:-1])
         if e % 10 == 0:
             random_index = np.random.randint(0, X_test.shape[0])
+            x_pred_o = torch.sqrt(torch.exp(x_pred_o))
             plot_preprocessed(x_test[random_index,1:].cpu().numpy(),x_pred_u[random_index,:-1].cpu().numpy(), x_pred_o[0,:-1].cpu().numpy())
         wandb.log({"test_loss": loss_test.item(), "loss_train": loss.item(), "lr": scheduler.get_last_lr()[0]})
         print(f"Epoch {e}: loss = {loss.item()}, test_loss = {loss_test.item()}")

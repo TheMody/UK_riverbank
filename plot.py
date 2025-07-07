@@ -4,12 +4,12 @@ import matplotlib.gridspec as gridspec
 from utils import find_outliers
 from config import *
 #expects x to be a 2d array with shape (n_timesteps, n_features)
-def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False, save_pth = "newer_figures/lstmperformance.svg"):
+def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False, ids = None, save_pth = "newer_figures/lstmperformance.svg"):
     fig = plt.figure(figsize=(35, 20))
     gs = gridspec.GridSpec(3, 3, figure=fig, wspace=0.4, hspace=0.4)
     timeseries_mask = X[ :, 4] != NAN_VALUE
     timeseries_length = np.sum(timeseries_mask)
-    X_pred_margin = np.sqrt(np.exp(X_pred_margin))
+    
     num_of_vis_features = 8
     if X_outlier is not None:
         num_of_vis_features -= 1
@@ -20,6 +20,8 @@ def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False, sa
         ax.set_title(f"Time Series of {all_features[display_features_indices[i]]}")
         ax.set_xlabel("Timestamp")
         ax.set_ylabel(all_features[display_features_indices[i]])
+        if display_features_indices[i] in categorical_features_indices:
+            ax.set_yticks(np.arange(0, len(ids[all_features[display_features_indices[i]]]), 1), ids[all_features[display_features_indices[i]]])
         timeseries[timeseries == -1.0] = np.nan
 
         ax.plot(range(timeseries_length),timeseries[timeseries_mask], color="blue", label="Original", zorder = 3)

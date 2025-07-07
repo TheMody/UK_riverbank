@@ -18,6 +18,15 @@ X[:,:,not_categorical_features_indices] = X_without_categorical_features
 #np.random.shuffle(X)
 X = torch.from_numpy(X).float().to(device)
 
+with open("scaler.pkl", "rb") as f:
+    scaler = pickle.load( f)
+
+def inverse_scale(X):
+    X_without_categorical_features = np.delete(X, categorical_features_indices, axis=2)
+    X_without_categorical_features = scaler.inverse_transform(X_without_categorical_features.reshape(-1, X_without_categorical_features.shape[-1])).reshape(X_without_categorical_features.shape)
+    X[:,:,not_categorical_features_indices] = X_without_categorical_features
+    return X
+
 
 def calculate_prob(x, x_pred_u,x_pred_o):
     PDF = (1/torch.sqrt(2*3.14*torch.exp(x_pred_o))) * torch.exp(-0.5*((x-x_pred_u)**2)/torch.exp(x_pred_o))#[x != NAN_VALUE]
@@ -39,6 +48,8 @@ model = transformer_model(X.shape[-1],256, X.shape[-1], ids)
 model.load_state_dict(torch.load("model.pth"))
 model.to(device)
 
+
+
 epsilon = 1e-8
 with torch.no_grad():
     x_pred_u, x_pred_o, x_pred_c = model(X)
@@ -52,6 +63,16 @@ with torch.no_grad():
    # print(all_probs_log)
   #  print(categorical_prob.shape)   
     #all_probs = torch.concatenate((reg_prob, categorical_prob), dim = 2)
+    x_pred_u = x_pred_u.cpu().numpy()
+    x_pred_o = x_pred_o.cpu().numpy()
+    all_probs_log = all_probs_log.cpu().numpy()
+    X = X.cpu().numpy()
+
+    X = inverse_scale(X)
+    x_pred_o = np.sqrt(np.exp(x_pred_o))
+    x_pred_o = x_pred_u + x_pred_o
+    x_pred_u = inverse_scale(x_pred_u)
+    x_pred_o = inverse_scale(x_pred_o) - x_pred_u
 
     for i in range(X.shape[0]):
-        plot_preprocessed(X[i,1:].cpu().numpy(),x_pred_u[i,:-1].cpu().numpy(), x_pred_o[i,:-1].cpu().numpy(), all_probs_log[i].cpu().numpy(), show = False, save_pth="newer_figures/ukriver_" + str(i) + ".svg")
+        plot_preprocessed(X[i,1:],x_pred_u[i,:-1], x_pred_o[i,:-1], all_probs_log[i], show = False, save_pth="newer_figures/ukriver_" + str(i) + ".svg", ids = ids)

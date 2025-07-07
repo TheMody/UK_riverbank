@@ -6,7 +6,7 @@ batch_size = 8
 model_type = "transformer" # "transformer", "lstm" linear
 
 MIN_LENGTH_TIMESERIES = 10
-MAX_N_TIMESERIES = 10000
+MAX_N_TIMESERIES = 100
 NAN_VALUE = -1.0
 
 filter_features = ["site_cluster"]#["river", "site" ]

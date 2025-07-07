@@ -29,9 +29,11 @@ https://data.ceda.ac.uk/badc
 
 
 # Notes on First Results:
-Best Model seems to be small transformer. 256 hidden size 4 layer. 
-Linear is slightly worse: -1.4 vs -1.5 roughly
-Catchment basin only offers very small improvement
+- Best Model seems to be small transformer. 256 hidden size 4 layer. 
+
+- Linear is slightly worse: -1.4 vs -1.5 roughly.
+
+- Catchment basin only offers very small improvement.
 
 # Ideas:
 - Add weather data
