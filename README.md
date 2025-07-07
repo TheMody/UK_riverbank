@@ -29,6 +29,12 @@ https://data.ceda.ac.uk/badc
 
 
 # Notes on First Results:
-Pretty much the same outcome whether or not the Catchment basement is included in the input prediction.
+Best Model seems to be small transformer. 256 hidden size 4 layer. 
+Linear is slightly worse: -1.4 vs -1.5 roughly
+Catchment basin only offers very small improvement
 
-Best Model seems to be very tiny transformer. 64 hidden size 1 layer without catchment seems to work better
+# Ideas:
+- Add weather data
+- Add graph structure
+- make the model continuous (regular time steps no longer needed)
+- use an LLM to get the most out of the csv data? i.e. encode the tabular information using llm embeddings of the title + table information.
