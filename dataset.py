@@ -7,7 +7,7 @@ from utils import impute_timeseries
 from tqdm import tqdm
 
 def get_ukriver_dataset(preprocess = False):
-    filepath = "data/CSI_Data_ALL_12062025.csv"
+    
     df = pd.read_csv(filepath)
 
     ids = {}

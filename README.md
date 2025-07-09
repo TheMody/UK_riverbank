@@ -36,7 +36,7 @@ https://data.ceda.ac.uk/badc
 - Catchment basin only offers very small improvement.
 
 # Ideas:
-- Add weather data
+- Add weather data - added but no improvement.
 - Add graph structure
 - make the model continuous (regular time steps no longer needed)
 - use an LLM to get the most out of the csv data? i.e. encode the tabular information using llm embeddings of the title + table information.

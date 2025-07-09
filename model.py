@@ -99,7 +99,10 @@ class transformer_model(torch.nn.Module):
             dim = hidden_dim,
             depth = num_layers,
             heads = hidden_dim//64,
-            rotary_pos_emb = True
+            rotary_pos_emb = True,
+            # layer_dropout = 0.2,
+            # ff_swish = True,
+            # ff_glu = True,
         )
         self.fc_u = torch.nn.Linear(hidden_dim, output_dim)
         self.fc_o = torch.nn.Linear(hidden_dim, output_dim)

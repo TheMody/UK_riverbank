@@ -1,14 +1,15 @@
 #modelparameters
 hidden_dim = 256
 num_layers = 4
-lr= 1e-4
+lr= 1e-5 #1e-5 was better
 batch_size = 8
 model_type = "transformer" # "transformer", "lstm" linear
 
 MIN_LENGTH_TIMESERIES = 10
-MAX_N_TIMESERIES = 100
+MAX_N_TIMESERIES = 10000
 NAN_VALUE = -1.0
 
+filepath = "data/CSI_Data_ALL_12062025_enriched.csv"
 filter_features = ["site_cluster"]#["river", "site" ]
 display_features = ["waterLevel", "temperature", "totalDissolvedSolids", "turbidity", "ph" ,"phosphate","nitrate", "ammonia"]#
 input_features = ["long", "lat","recentRain", "estimatedWidth", "estimatedDepth", "waterFlow", "timestamp", "landUseWoodland", "landUseMoorlandOrHeath", "landUseUrbanResidential", "landUseIndustrialOrCommercial","landUseParklandOrGardens", "landUseGrasslandOrPasture" , "landUseAgriculture", "landUseTilledLand", "landUseOther", "pollutionEvidenceNone",'bankVegetationBareEarth', 'bankVegetationImpermeableSurface',
@@ -27,7 +28,8 @@ input_features = ["long", "lat","recentRain", "estimatedWidth", "estimatedDepth"
        'pollutionEvidenceSmotheringAlgae', 'pollutionEvidenceDeadFish',
        'pollutionEvidenceDeadInvertebrates', 'pollutionEvidenceOther',"OPCAT_ID", "MANCAT_ID","waterBodyType",'flowImpedanceNone',
        'flowImpedanceWeir', 'flowImpedanceTree', 'flowImpedanceDebrisDam',
-       'flowImpedanceBridgeOrCulvert', 'flowImpedanceOther',]#,
+       'flowImpedanceBridgeOrCulvert', 'flowImpedanceOther',
+       "prcp_mm_d0","prcp_mm_d1","prcp_mm_d2","prcp_mm_d3","prcp_mm_d5","prcp_mm_d10"]#,
 
 #determines which features are predicted by the model
 intersting_columns = ["waterLevel", "temperature", "totalDissolvedSolids", "turbidity", "ph", "nitrate", "ammonia","phosphate"]#
@@ -71,4 +73,5 @@ config = {
     "lr": lr,
     "batch_size": batch_size,
     "model_type": model_type,
+    "filepath": filepath,
 }

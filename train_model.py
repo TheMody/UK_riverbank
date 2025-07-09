@@ -76,6 +76,7 @@ i = 0
 best_test_loss = 1e10
 for e in range(max_epochs):
     np.random.shuffle(X)
+    model.train()
     for step in tqdm(range(X.shape[0]//batch_size)):
         i = step * batch_size
         if i + batch_size > X.shape[0]:
@@ -94,22 +95,26 @@ for e in range(max_epochs):
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
         optimizer.step()
     scheduler.step()
+
+
+    #Note eval is not batched at the moment which is shit for big networks
+    model.eval()
     with torch.no_grad():
         #calculate the loss on the test set
-        x_test = torch.tensor(X_test).to(device, dtype=torch.float32)
-        x_pred_u, x_pred_o, x_pred_c = model(x_test)
+        x_current = torch.tensor(X_test).to(device, dtype=torch.float32)
+        x_pred_u, x_pred_o, x_pred_c = model(x_current)
 
-        loss_test = criterion(x_test[:,1:,loss_features_indices_notcat], x_pred_u[:,:-1,loss_features_indices_notcat], x_pred_o[:,:-1,loss_features_indices_notcat])
+        loss_test = criterion(x_current[:,1:,loss_features_indices_notcat], x_pred_u[:,:-1,loss_features_indices_notcat], x_pred_o[:,:-1,loss_features_indices_notcat])
         loss_cat = 0.0
         for i,ind in enumerate(categorical_features_indices):
             if ind in loss_features_indices_cat:
-              loss_cat += torch.nn.functional.cross_entropy(x_pred_c[i][:,:-1,:].reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1)), x_pred_c[i].shape[2]),(x_test[:,1:,ind].long()+1).reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1))), ignore_index=0)
+              loss_cat += torch.nn.functional.cross_entropy(x_pred_c[i][:,:-1,:].reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1)), x_pred_c[i].shape[2]),(x_current[:,1:,ind].long()+1).reshape((x_pred_c[i].shape[0]*(x_pred_c[i].shape[1]-1))), ignore_index=0)
         loss_test = loss_test + loss_cat /len(loss_features_indices_cat)
      #   loss_test = criterion_test(x_test[:,1:], x_pred_u[:,:-1])
         if e % 10 == 0:
-            random_index = np.random.randint(0, X_test.shape[0])
+            random_index = np.random.randint(0, x_current.shape[0])
             x_pred_o = torch.sqrt(torch.exp(x_pred_o))
-            plot_preprocessed(x_test[random_index,1:].cpu().numpy(),x_pred_u[random_index,:-1].cpu().numpy(), x_pred_o[0,:-1].cpu().numpy())
+            plot_preprocessed(x_current[random_index,1:].cpu().numpy(),x_pred_u[random_index,:-1].cpu().numpy(), x_pred_o[0,:-1].cpu().numpy())
         wandb.log({"test_loss": loss_test.item(), "loss_train": loss.item(), "lr": scheduler.get_last_lr()[0]})
         print(f"Epoch {e}: loss = {loss.item()}, test_loss = {loss_test.item()}")
        # print(f"Epoch {e}: test_loss = {loss_test.item()}")

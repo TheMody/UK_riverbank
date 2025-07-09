@@ -20,7 +20,7 @@ def plot_preprocessed(X, X_pred, X_pred_margin, X_outlier=None, show = False, id
         ax.set_title(f"Time Series of {all_features[display_features_indices[i]]}")
         ax.set_xlabel("Timestamp")
         ax.set_ylabel(all_features[display_features_indices[i]])
-        if display_features_indices[i] in categorical_features_indices:
+        if display_features_indices[i] in categorical_features_indices and ids is not None:
             ax.set_yticks(np.arange(0, len(ids[all_features[display_features_indices[i]]]), 1), ids[all_features[display_features_indices[i]]])
         timeseries[timeseries == -1.0] = np.nan
 
